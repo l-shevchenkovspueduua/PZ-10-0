@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Практичне заняття №10 — Кібергігієна в комунікації та документообігу</title>
+<style>
+:root{--bg:#F7F4EF;--card:#FFF;--soft:#EFECE6;--text:#2C2623;--muted:#5C554E;--olive:#4A5D4E;--terra:#C86D51;--amber:#D99B52;--border:#DCD5C9;--ok:#255834}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;padding:18px 10px 40px}
+.container{max-width:960px;margin:0 auto;background:var(--card);border-radius:16px;box-shadow:0 6px 24px rgba(44,38,35,.08);border:1px solid var(--border);overflow:hidden}
+header{background:var(--olive);color:#fff;padding:22px 26px;text-align:center}
+header h1{font-size:20px;margin-bottom:4px;font-weight:700}
+header p{font-size:13.5px;opacity:.92}
+.steps-nav{display:grid;grid-template-columns:repeat(4,1fr);background:var(--soft);border-bottom:1px solid var(--border)}
+@media(max-width:760px){.steps-nav{grid-template-columns:repeat(2,1fr)}}
+.step-tab{text-align:center;padding:10px 6px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;border-right:1px solid var(--border);user-select:none}
+.step-tab.active{background:var(--card);color:var(--olive);border-bottom-color:var(--terra)}
+.step-tab.done{color:var(--ok);background:#EAF3EC}
+.content-area{padding:24px 28px}
+@media(max-width:650px){.content-area{padding:16px 12px}}
+.step-pane{display:none}
+.step-pane.active{display:block}
+.top-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+h2{font-size:18.5px;color:var(--olive)}
+.theory-box{background:var(--soft);border-left:4px solid var(--olive);padding:13px 16px;border-radius:8px;font-size:13.5px;margin-bottom:14px}
+.theory-box strong{color:var(--olive)}
+.algo-box{background:#F3F7F4;border:1px solid #B5CBB9;border-radius:8px;padding:13px 16px;font-size:13.5px;margin-bottom:14px}
+.algo-box ol{padding-left:18px;margin-top:6px}
+.algo-box li{margin-bottom:4px}
+.card-block{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:15px;margin-bottom:14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:680px){.grid-2{grid-template-columns:1fr}}
+.field-group{margin-bottom:12px}
+.field-group:last-child{margin-bottom:0}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}
+.sub-hint{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-bottom:5px}
+input[type="text"],input[type="email"],select,textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-size:13.5px;font-family:inherit;background:#fff;color:var(--text)}
+textarea{resize:vertical;min-height:62px}
+.chk-label{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;cursor:pointer;padding:6px 0}
+.chk-label input{width:17px;height:17px;accent-color:var(--olive)}
+.btn{background:var(--olive);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer}
+.btn:hover{opacity:.9}
+.btn-terra{background:var(--terra)}
+.btn-amber{background:var(--amber);padding:7px 13px;font-size:12px}
+.btn-soft{background:var(--soft);color:var(--text);border:1px solid var(--border)}
+.footer-nav{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px}
+.report-sheet{background:#fff;border:2px solid var(--olive);border-radius:12px;padding:22px;margin-bottom:18px}
+.report-header{background:var(--olive);color:#fff;padding:14px 18px;border-radius:8px;margin-bottom:16px}
+.report-section{margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:13.5px}
+.report-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.report-section h4{color:var(--olive);font-size:14px;margin-bottom:6px}
+.report-list{padding-left:18px}
+.report-list li{margin-bottom:4px}
+@media print{body{background:#fff;padding:0}.container{box-shadow:none;border:none;max-width:100%}header,.steps-nav,.footer-nav,.no-print{display:none!important}.content-area{padding:0}.step-pane{display:none!important}#step8{display:block!important}}
+</style>
+<script>
+function val(id){var e=document.getElementById(id);return e?e.value.trim():"";}
+function setVal(id,t){var e=document.getElementById(id);if(e)e.value=t;}
+function setChk(id,b){var e=document.getElementById(id);if(e)e.checked=b;}
+function isChk(id){var e=document.getElementById(id);return e&&e.checked;}
+
+function goStep(n){
+  if(n===8)buildReport();
+  var panes=document.querySelectorAll(".step-pane");
+  var tabs=document.querySelectorAll(".step-tab");
+  for(var i=0;i<panes.length;i++){
+    panes[i].classList.remove("active");
+    if(tabs[i])tabs[i].classList.remove("active");
+  }
+  var p=document.getElementById("step"+n);
+  var t=document.getElementById("tab"+n);
+  if(p)p.classList.add("active");
+  if(t)t.classList.add("active");
+  if(n>1){
+    var prev=document.getElementById("tab"+(n-1));
+    if(prev)prev.classList.add("done");
+  }
+  window.scrollTo(0,0);
+}
+
+function sample1(){
+  if(!val("uName"))setVal("uName","Шевченко Олена Петрівна");
+  if(!val("uSchool"))setVal("uSchool","Вінницький державний педагогічний університет / Ліцей");
+  if(!val("uRole"))setVal("uRole","Викладач, куратор академічної групи");
+  setChk("chk2fa",true);
+  setVal("s1Note","Активовано двоетапну перевірку через сповіщення Google на смартфон та резервний генератор кодів. Це унеможливлює несанкціонований вхід до корпоративної пошти та електронного журналу навіть у разі компрометації пароля.");
+}
+
+function sample2(){
+  setChk("chkSess",true);
+  setChk("chkApps",true);
+  setVal("s2Note","Проведено ревізію активних сесій у блоці «Ваші пристрої» — примусово завершено сесію на спільному комп’ютері навчальної аудиторії. У розділі «Сторонні додатки та сервіси» скасовано делеговані права доступу для 4 неактуальних зовнішніх вебресурсів.");
+}
+
+function sample3(){
+  setVal("s3Note","Ознаки фішингу — використання публічного домену замість офіційного (.gov.ua або .edu.ua), штучний дефіцит часу та зашифрований паролем архів. Алгоритм дій — не відкривати вкладення, перевірити завантажені файли через вбудовані антивірусні інструменти операційної системи, а офіційні пам’ятки для здобувачів освіти та батьків надсилати виключно у форматі PDF або в режимі перегляду.");
+}
+
+function sample4(){
+  setVal("f1Name","Зведена відомість успішності та соціальний паспорт групи");
+  setVal("f1Acc","Відкрите посилання (змінено на обмежений адресний доступ)");
+  setVal("f2Name","Робоча навчальна програма та матеріали кафедри");
+  setVal("f2Acc","Коментування для викладачів кафедри");
+  setVal("f3Name","Інструктивно-методичні матеріали для здобувачів освіти");
+  setVal("f3Acc","Перегляд (Читач) без права редагування");
+  setVal("s4Note","Виявлено та закрито публічне посилання на таблицю з контактними даними здобувачів освіти. Встановлено персоніфікований доступ виключно за корпоративними email-адресами.");
+}
+
+function sample5(){
+  setVal("c1","Збір персональних та соціальних відомостей здійснюється індивідуально через захищену анкету Google Форми без публікації зведеної таблиці у групових чатах. У налаштуваннях доступу шестерні вимкнено можливість завантаження, друку та копіювання файла сторонніми особами.");
+  setVal("c2","Доступ до спільної таблиці надається адресно на корпоративні пошти 20 викладачів. Структуру шапки та розрахункові формули заблоковано через меню «Дані — Захистити аркуші та діапазони», а контроль цілісності здійснюється через «Файл — Історія версій».");
+}
+
+function sample6(){
+  setVal("m1","Відкривати корпоративну пошту та хмарне сховище на спільних ПК виключно у вікні режиму Інкогніто (Ctrl + Shift + N).");
+  setVal("m2","Відхиляти пропозиції браузера щодо збереження паролів та видаляти локальні копії завантажених документів після завершення заняття.");
+  setVal("m3","Обов’язково виконувати вихід з облікового запису, а для підписання звітів використовувати особистий хмарний Дія.Підпис та послідовне накладання підписів на порталі czo.gov.ua без передачі файлового ключа.");
+}
+
+function sample7(){
+  setVal("r1","Таблиці з персональними даними здобувачів освіти ніколи не публікую у режимі «Усі, хто має посилання»; надаю доступ виключно за верифікованими корпоративними email-адресами.");
+  setVal("r2","Розмежовую права доступу в хмарному сховищі — здобувачам освіти надаю режим «Перегляд», колегам для рецензування — «Коментування», а «Редагування» відкриваю адресно із захистом діапазонів таблиці.");
+  setVal("r3","На спільних робочих станціях в аудиторіях та викладацьких працюю у режимі Інкогніто (Ctrl + Shift + N) та проводжу регулярну ревізію активних пристроїв і сторонніх додатків у профілі безпеки.");
+  setVal("r4","Верифікую домен відправника офіційної кореспонденції (.gov.ua, .edu.ua), не відкриваю запаролені архіви з публічних скриньок та сканую вкладення через вбудовані антивірусні інструменти операційної системи.");
+  setVal("r5","Дотримуюся принципу особистої недоторканності кваліфікованого електронного підпису (КЕП) — не передаю ключі третім особам та застосовую біометричний Дія.Підпис і державний портал czo.gov.ua.");
+}
+
+function buildReport(){
+  if(!val("s1Note"))sample1();
+  if(!val("s2Note"))sample2();
+  if(!val("s3Note"))sample3();
+  if(!val("f1Name"))sample4();
+  if(!val("c1"))sample5();
+  if(!val("m1"))sample6();
+  if(!val("r1"))sample7();
+
+  var h="<div class='report-section'>"+
+    "<p><strong>Прізвище, ім’я, по батькові автора</strong> — "+(val("uName")||"Слухач курсу")+"</p>"+
+    "<p><strong>Заклад освіти</strong> — "+(val("uSchool")||"Заклад освіти")+"</p>"+
+    "<p><strong>Посада / кафедра</strong> — "+(val("uRole")||"Викладач")+" ("+(val("uEmail")||"email")+")</p></div>"+
+    "<div class='report-section'><h4>1. ЗАХИСТ ЦИФРОВОЇ ІДЕНТИЧНОСТІ ТА ДВОФАКТОРНА АВТЕНТИФІКАЦІЯ (2FA)</h4>"+
+    "<p><strong>Статус 2FA</strong> — "+(isChk("chk2fa")?"Успішно активовано та верифіковано":"Перевірено")+"</p>"+
+    "<p><strong>Аналітичний висновок</strong> — "+val("s1Note")+"</p></div>"+
+    "<div class='report-section'><h4>2. КЕРУВАННЯ АКТИВНИМИ СЕСІЯМИ ТА РЕВІЗІЯ СТОРОННІХ СЕРВІСІВ</h4>"+
+    "<p><strong>Результат аудиту</strong> — "+val("s2Note")+"</p></div>"+
+    "<div class='report-section'><h4>3. ВЕРИФІКАЦІЯ ЕЛЕКТРОННОЇ КОРЕСПОНДЕНЦІЇ ТА ВКЛАДЕНЬ</h4>"+
+    "<p><strong>Протокол безпеки листування</strong> — "+val("s3Note")+"</p></div>"+
+    "<div class='report-section'><h4>4. АУДИТ ХМАРНОГО СХОВИЩА ТА ЗАХИСТ ПЕРСОНАЛЬНИХ ДАНИХ</h4><ul class='report-list'>"+
+    "<li><strong>Документ 1</strong> — "+val("f1Name")+" ("+val("f1Acc")+")</li>"+
+    "<li><strong>Документ 2</strong> — "+val("f2Name")+" ("+val("f2Acc")+")</li>"+
+    "<li><strong>Документ 3</strong> — "+val("f3Name")+" ("+val("f3Acc")+")</li>"+
+    "<li><strong>Усунені вразливості</strong> — "+val("s4Note")+"</li></ul></div>"+
+    "<div class='report-section'><h4>5. АДМІНІСТРУВАННЯ СПІЛЬНИХ ТАБЛИЦЬ ТА ЗАХИСТ ЦІЛІСНОСТІ ДАНИХ</h4><ul class='report-list'>"+
+    "<li><strong>Кейс 1 (Збір чутливих даних)</strong> — "+val("c1")+"</li>"+
+    "<li><strong>Кейс 2 (Спільна робота колективу)</strong> — "+val("c2")+"</li></ul></div>"+
+    "<div class='report-section'><h4>6. РЕГЛАМЕНТ РОБОТИ НА СПІЛЬНИХ ПК ТА БЕЗПЕКА КЕП</h4><ol class='report-list'>"+
+    "<li>"+val("m1")+"</li><li>"+val("m2")+"</li><li>"+val("m3")+"</li></ol></div>"+
+    "<div class='report-section'><h4>7. ПІДСУМКОВИЙ ПАКЕТ ІЗ 5 ПРАВИЛ БЕЗПЕЧНОГО ДОКУМЕНТООБІГУ</h4><ol class='report-list'>"+
+    "<li>"+val("r1")+"</li><li>"+val("r2")+"</li><li>"+val("r3")+"</li><li>"+val("r4")+"</li><li>"+val("r5")+"</li></ol></div>";
+  var out=document.getElementById("repOut");
+  if(out)out.innerHTML=h;
+}
+
+function getTxt(){
+  buildReport();
+  return "ЗВІТНИЙ РОБОЧИЙ АРКУШ — ПРАКТИЧНА РОБОТА ДО ТЕМИ 10\nАвтор — "+val("uName")+"\nЗаклад — "+val("uSchool")+"\nПосада — "+val("uRole")+"\n\n"+
+    "1. ДВОФАКТОРНА АВТЕНТИФІКАЦІЯ (2FA)\n"+val("s1Note")+"\n\n"+
+    "2. РЕВІЗІЯ АКТИВНИХ СЕСІЙ ТА СТОРОННІХ СЕРВІСІВ\n"+val("s2Note")+"\n\n"+
+    "3. ВЕРИФІКАЦІЯ КОРЕСПОНДЕНЦІЇ\n"+val("s3Note")+"\n\n"+
+    "4. АУДИТ ХМАРНОГО СХОВИЩА\n- "+val("f1Name")+" ("+val("f1Acc")+")\n- "+val("f2Name")+" ("+val("f2Acc")+")\n- "+val("f3Name")+" ("+val("f3Acc")+")\nВисновок — "+val("s4Note")+"\n\n"+
+    "5. АДМІНІСТРУВАННЯ СПІЛЬНИХ ТАБЛИЦЬ\n- Кейс 1 — "+val("c1")+"\n- Кейс 2 — "+val("c2")+"\n\n"+
+    "6. БЕЗПЕКА СПІЛЬНИХ РОБОЧИХ СТАНЦІЙ ТА КЕП\n1) "+val("m1")+"\n2) "+val("m2")+"\n3) "+val("m3")+"\n\n"+
+    "7. 5 ПРАВИЛ БЕЗПЕЧНОГО ОБМІНУ ФАЙЛАМИ\n1) "+val("r1")+"\n2) "+val("r2")+"\n3) "+val("r3")+"\n4) "+val("r4")+"\n5) "+val("r5");
+}
+
+function sendMail(){
+  var s=encodeURIComponent("Практична робота Тема 10 — "+(val("uName")||"Слухач"));
+  var b=encodeURIComponent(getTxt());
+  window.location.href="mailto:ls.shevchenko@vspu.edu.ua?subject="+s+"&body="+b;
+}
+
+function copyRep(){
+  navigator.clipboard.writeText(getTxt()).then(function(){alert("Текст звіту скопійовано в буфер обміну!");});
+}
+</script>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Практичне заняття до Теми 10. Кібергігієна в комунікації та документообігу</h1>
+    <p>Інтерактивна інструкційна картка для науково-педагогічних та педагогічних працівників</p>
+  </header>
+
+  <div class="steps-nav">
+    <div class="step-tab active" id="tab1" onclick="goStep(1)">Крок 1 • 2FA-захист</div>
+    <div class="step-tab" id="tab2" onclick="goStep(2)">Крок 2 • Ревізія сесій</div>
+    <div class="step-tab" id="tab3" onclick="goStep(3)">Крок 3 • Безпека пошти</div>
+    <div class="step-tab" id="tab4" onclick="goStep(4)">Крок 4 • Аудит Диска</div>
+    <div class="step-tab" id="tab5" onclick="goStep(5)">Крок 5 • Спільні таблиці</div>
+    <div class="step-tab" id="tab6" onclick="goStep(6)">Крок 6 • Спільні ПК і КЕП</div>
+    <div class="step-tab" id="tab7" onclick="goStep(7)">Крок 7 • 5 правил</div>
+    <div class="step-tab" id="tab8" onclick="goStep(8)">Фінал • PDF-паспорт</div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- КРОК 1 -->
+    <div class="step-pane active" id="step1">
+      <div class="top-row">
+        <h2>Крок 1. Захист цифрової ідентичності та двофакторна автентифікація (2FA)</h2>
+        <button type="button" class="btn btn-amber" onclick="sample1()">Заповнити Крок 1 зразком</button>
+      </div>
+
+      <div class="card-block">
+        <div class="grid-2">
+          <div class="field-group"><label>Прізвище, ім’я, по батькові автора</label><input type="text" id="uName" placeholder="Введіть ваше повне ПІБ"></div>
+          <div class="field-group"><label>Заклад освіти</label><input type="text" id="uSchool" placeholder="Вкажіть назву закладу освіти"></div>
+          <div class="field-group"><label>Посада, науковий ступінь або кафедра</label><input type="text" id="uRole" placeholder="Наприклад — доцент кафедри, викладач"></div>
+          <div class="field-group"><label>Електронна пошта</label><input type="email" id="uEmail" placeholder="name@example.com"></div>
+        </div>
+      </div>
+
+      <div class="theory-box">
+        <strong>Теоретичне обґрунтування</strong> — відповідно до рекомендацій Держспецзв’язку та МОН України, двофакторна автентифікація (2FA) є обов’язковим стандартом безпеки для корпоративних та освітніх акаунтів (Google Workspace for Education, Microsoft 365, електронні журнали). Вхід вимагає одночасного підтвердження пароля та фізичного фактора володіння (смартфона або біометрії), що гарантує захист навіть у разі викрадення пароля.
+      </div>
+
+      <div class="algo-box">
+        <strong>Алгоритм практичного налаштування у профілі Google</strong>
+        <ol>
+          <li><strong>Перехід до налаштувань профілю</strong> — відкрийте браузер, у правому верхньому кутку натисніть на аватар профілю та оберіть пункт «Керувати обліковим записом Google».</li>
+          <li><strong>Перехід у розділ безпеки</strong> — у бічній панелі ліворуч виберіть розділ «Безпека й вхід» (або «Безпека»), знайдіть блок «Двоетапна перевірка» (2-Step Verification) і натисніть «Розпочати» або «Увімкнути».</li>
+          <li><strong>Вибір та підтвердження другого фактора</strong> — введіть пароль та активуйте зручний спосіб верифікації (сповіщення від Google на екран смартфона, застосунок Google Authenticator або SMS-код).</li>
+        </ol>
+      </div>
+
+      <div class="card-block">
+        <label class="chk-label"><input type="checkbox" id="chk2fa"> Двоетапну перевірку (2FA) для робочого облікового запису перевірено та активовано</label>
+        <div class="field-group" style="margin-top:10px;">
+          <label>Практична фіксація результату (який спосіб другого фактора ви обрали як основний і чому)</label>
+          <textarea id="s1Note" placeholder="Опишіть обраний метод верифікації входу..."></textarea>
+        </div>
+      </div>
+
+      <div class="footer-nav">
+        <span>Крок 1 із 7</span>
+        <button type="button" class="btn btn-terra" onclick="goStep(2)">Далі — Крок 2 (Ревізія сесій) →</button>
+      </div>
+    </div>
+
+    <!-- КРОК 2 -->
+    <div class="step-pane" id="step2">
+      <div class="top-row">
+        <h2>Крок 2. Керування активними сесіями та ревізія прав доступу сторонніх сервісів</h2>
+        <button type="button" class="btn btn-amber" onclick="sample2()">Заповнити Крок 2 зразком</button>
+      </div>
+
+      <div class="theory-box">
+        <strong>Теоретичне обґрунтування</strong> — під час професійної діяльності викладачі часто авторизуються на комп’ютерах навчальних аудиторій, кафедр чи бібліотек, а також використовують швидкий вхід «Увійти через Google» (протокол OAuth) на зовнішніх освітніх платформах. З часом неактивні сервіси та незавершені сесії створюють приховану загрозу несанкціонованого доступу до персональних даних і контактів.
+      </div>
+
+      <div class="algo-box">
+        <strong>Алгоритм проведення аудиту точок доступу</strong>
+        <ol>
+          <li><strong>Контроль активних пристроїв</strong> — у розділі «Безпека» облікового запису Google відкрийте блок «Ваші пристрої» (Manage all devices), перегляньте перелік усіх комп’ютерів і смартфонів, де відкрита ваша сесія, та натисніть «Вийти» (Sign out) для всіх спільних або невідомих пристроїв.</li>
+          <li><strong>Ревізія делегованих доступів</strong> — у тому ж розділі перейдіть до блоку «Ваші зв’язки зі сторонніми додатками та сервісами», оберіть платформи, якими ви більше не користуєтеся, та натисніть «Видалити всі зв’язки» (відв’язати).</li>
+        </ol>
+      </div>
+
+      <div class="card-block">
+        <label class="chk-label"><input type="checkbox" id="chkSess"> Перевірено список активних пристроїв та припинено зайві сесії</label>
+        <label class="chk-label"><input type="checkbox" id="chkApps"> Виконано ревізію та відключення неактуальних сторонніх вебсервісів</label>
+        <div class="field-group" style="margin-top:10px;">
+          <label>Аналітичний висновок за результатами ревізії (скільки пристроїв та сторонніх сервісів ви перевірили або відключили)</label>
+          <textarea id="s2Note" placeholder="Зафіксуйте результати аудиту активних сесій та сторонніх додатків..."></textarea>
+        </div>
+      </div>
+
+      <div class="footer-nav">
+        <button type="button" class="btn btn-soft" onclick="goStep(1)">← Назад до Кроку 1</button>
+        <button type="button" class="btn btn-terra" onclick="goStep(3)">Далі — Крок 3 (Безпека пошти) →</button>
+      </div>
+    </div>
+
+    <!-- КРОК 3 -->
+    <div class="step-pane" id="step3">
+      <div class="top-row">
+        <h2>Крок 3. Верифікація електронної кореспонденції та захист від шкідливих вкладень</h2>
+        <button type="button" class="btn btn-amber" onclick="sample3()">Заповнити Крок 3 зразком</button>
+      </div>
+
+      <div class="theory-box">
+        <strong>Теоретичне обґрунтування</strong> — понад 75% цільових атак на заклади освіти реалізуються через фішингові розсилки, що імітують офіційні розпорядження органів управління освітою. Зловмисники використовують зашифровані паролем архіви (.zip, .rar), оскільки стандартні поштові сканери не можуть перевірити вміст захищеного паролем контейнера.
+      </div>
+
+      <div class="algo-box">
+        <strong>Протокол безпеки під час опрацювання вхідної та вихідної кореспонденції</strong>
+        <ol>
+          <li><strong>Правило 10 секунд</strong> — перед відкриттям вкладення перевірте справжній домен відправника після символу @ (державні органи використовують виключно домен <strong>.gov.ua</strong>, заклади освіти — <strong>.edu.ua</strong>, а не публічні скриньки @ukr.net чи @gmail.com).</li>
+          <li><strong>Антивірусний контроль</strong> — не запускайте виконувані файли (.exe) чи запаролені архіви з невідомих джерел; завантажені документи обов’язково перевіряйте через <strong>вбудовані антивірусні інструменти операційної системи</strong>.</li>
+          <li><strong>Безпечний формат розсилки</strong> — офіційні пам’ятки, накази та розклад занять передавайте здобувачам освіти й батькам у незмінному форматі PDF або в режимі перегляду.</li>
+        </ol>
+      </div>
+
+      <div class="card-block">
+        <div class="field-group">
+          <label>Ситуаційне завдання — вам надійшов лист із публічної скриньки про «термінове оновлення програми електронного журналу до 16.00» із запароленим архівом, а також необхідно надіслати пам’ятку безпеки у чат групи чи класу. Опишіть ваш алгоритм дій</label>
+          <textarea id="s3Note" placeholder="Сформулюйте ваш алгоритм перевірки листа та безпечної передачі документа..."></textarea>
+        </div>
+      </div>
+
+      <div class="footer-nav">
+        <button type="button" class="btn btn-soft" onclick="goStep(2)">← Назад до Кроку 2</button>
+        <button type="button" class="btn btn-terra" onclick="goStep(4)">Далі — Крок 4 (Аудит Диска) →</button>
+      </div>
+    </div>
+
+    <!-- КРОК 4 -->
+    <div class="step-pane" id="step4">
+      <div class="top-row">
+        <h2>Крок 4. Аудит хмарного сховища та захист персональних даних</h2>
+        <button type="button" class="btn btn-amber" onclick="sample4()">Заповнити Крок 4 зразком</button>
+      </div>
+
+      <div class="theory-box">
+        <strong>Теоретичне обґрунтування</strong> — налаштування доступу «Усі в інтернеті, хто має посилання» для документів, що містять персональні дані здобувачів освіти (списки груп і класів, адреси, соціальний статус, контакти батьків), є прямим порушенням Закону України «Про захист персональних даних» і призводить до індексації конфіденційної інформації у пошукових системах.
+      </div>
+
+      <div class="algo-box">
+        <strong>Алгоритм ревізії власного хмарного простору (Google Drive / OneDrive)</strong>
+        <ol>
+          <li>Відкрийте своє робоче хмарне сховище та оберіть 3 робочі документи або таблиці за останній навчальний рік.</li>
+          <li>Натисніть кнопку «Поділитися» біля кожного файла та перевірте відповідність налаштувань правилу трьох рівнів доступу (Перегляд — Коментування — Редагування).</li>
+          <li>Для всіх таблиць із персональними даними скасуйте доступ за публічним посиланням і встановіть адресний доступ за конкретними email-адресами.</li>
+        </ol>
+      </div>
+
+      <div class="card-block">
+        <div class="grid-2">
+          <div class="field-group"><label>Перший перевірений документ</label><input type="text" id="f1Name" placeholder="Назва або тип файла"></div>
+          <div class="field-group"><label>Рівень доступу до першого документа</label>
+            <select id="f1Acc">
+              <option value="Адресний доступ за email (Обмежено)">Адресний доступ за email (Обмежено)</option>
+              <option value="Відкрите посилання (змінено на обмежений адресний доступ)">Відкрите посилання (змінено на обмежений адресний доступ)</option>
+              <option value="Перегляд за посиланням (Читач)">Перегляд за посиланням (Читач)</option>
+              <option value="Коментування для викладачів кафедри">Коментування для викладачів кафедри</option>
+            </select>
+          </div>
+          <div class="field-group"><label>Другий перевірений документ</label><input type="text" id="f2Name" placeholder="Назва або тип файла"></div>
+          <div class="field-group"><label>Рівень доступу до другого документа</label>
+            <select id="f2Acc">
+              <option value="Коментування для викладачів кафедри">Коментування для викладачів кафедри</option>
+              <option value="Адресний доступ за email (Обмежено)">Адресний доступ за email (Обмежено)</option>
+              <option value="Перегляд (Читач) без права редагування">Перегляд (Читач) без права редагування</option>
+            </select>
+          </div>
+          <div class="field-group"><label>Третій перевірений документ</label><input type="text" id="f3Name" placeholder="Назва або тип файла"></div>
+          <div class="field-group"><label>Рівень доступу до третього документа</label>
+            <select id="f3Acc">
+              <option value="Перегляд (Читач) без права редагування">Перегляд (Читач) без права редагування</option>
+              <option value="Адресний доступ за email (Обмежено)">Адресний доступ за email (Обмежено)</option>
+              <option value="Коментування для викладачів кафедри">Коментування для викладачів кафедри</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-group" style="margin-top:10px;">
+          <label>Які ризики виявлено під час аудиту хмарного сховища та які налаштування змінено</label>
+          <textarea id="s4Note" placeholder="Опишіть усунені вразливості доступу..."></textarea>
+        </div>
+      </div>
+
+      <div class="footer-nav">
+        <button type="button" class="btn btn-soft" onclick="goStep(3)">← Назад до Кроку 3</button>
+        <button type="button" class="btn btn-terra" onclick="goStep(5)">Далі — Крок 5 (Спільні таблиці) →</button>
+      </div>
+    </div>
+
+    <!-- КРОК 5 -->
+    <div class="step-pane" id="step5">
+      <div class="top-row">
+        <h2>Крок 5. Адміністрування спільних електронних таблиць та захист цілісності даних</h2>
+        <button type="button" class="btn btn-amber" onclick="sample5()">Заповнити Крок 5 зразком</button>
+      </div>
+
+      <div class="theory-box">
+        <strong>Теоретичне обґрунтування</strong> — під час колективного заповнення зведених звітів кафедри чи закладу освіти виникає ризик випадкового видалення формул, сортування окремих стовпців або неконтрольованого копіювання конфіденційних списків.
+      </div>
+
+      <div class="algo-box">
+        <strong>Три технічні механізми захисту спільних документів у Google Workspace</strong>
+        <ol>
+          <li><strong>Захист діапазонів</strong> — виділіть шапку таблиці та клітинки з формулами, відкрийте меню «Дані — Захистити аркуші та діапазони» і залиште право їх редагування лише власнику документа.</li>
+          <li><strong>Заборона копіювання та завантаження</strong> — у вікні «Поділитися» натисніть на значок шестерні у правому верхньому кутку та зніміть прапорець «Читачі й коментатори можуть завантажувати, друкувати й копіювати файли».</li>
+          <li><strong>Історія версій</strong> — у разі пошкодження даних відкрийте «Файл — Історія версій — Переглянути історію версій» та відновлюйте попередній коректний стан документа за один клік.</li>
+        </ol>
+      </div>
+
+      <div class="card-block">
+        <div class="field-group">
+          <label>Кейс 1 — куратор або класний керівник збирає відомості про соціальний статус та пільги здобувачів освіти. Як організувати збір без відкритої таблиці у месенджері та захистити зведену базу від копіювання?</label>
+          <textarea id="c1" placeholder="Ваш розв’язок Кейсу 1..."></textarea>
+        </div>
+        <div class="field-group">
+          <label>Кейс 2 — завідувач кафедри або заступник директора створює спільну таблицю планування науково-методичного заходу для 20 викладачів. Як надати доступ і захистити структуру таблиці від псування?</label>
+          <textarea id="c2" placeholder="Ваш розв’язок Кейсу 2..."></textarea>
+        </div>
+      </div>
+
+      <div class="footer-nav">
+        <button type="button" class="btn btn-soft" onclick="goStep(4)">← Назад до Кроку 4</button>
+        <button type="button" class="btn btn-terra" onclick="goStep(6)">Далі — Крок 6 (Спільні ПК і КЕП) →</button>
+      </div>
+    </div>
+
+    <!-- КРОК 6 -->
+    <div class="step-pane" id="step6">
+      <div class="top-row">
+        <h2>Крок 6. Безпека спільних робочих станцій та електронних довірчих послуг (КЕП)</h2>
+        <button type="button" class="btn btn-amber" onclick="sample6()">Заповнити Крок 6 зразком</button>
+      </div>
+
+      <div class="theory-box">
+        <strong>Теоретичне обґрунтування</strong> — закриття вікна браузера на спільному комп’ютері в навчальній аудиторії чи викладацькій не припиняє активну сесію пошти. Водночас згідно із Законом України «Про електронну ідентифікацію та електронні довірчі послуги», кваліфікований електронний підпис (КЕП) має юридичну силу власноручного підпису, тому передача файлового ключа та пароля іншим особам тягне за собою персональну правову відповідальність власника ключа.
+      </div>
+
+      <div class="algo-box">
+        <strong>Протокол безпечної роботи на публічних ПК та підписання електронних документів</strong>
+        <ol>
+          <li>На спільних комп’ютерах закладу освіти використовуйте виключно режим анонімного перегляду <strong>Інкогніто (Ctrl + Shift + N)</strong>, який автоматично знищує файли cookie та сесію після закриття вікна.</li>
+          <li>Для підписання звітності, відомостей та атестаційних документів використовуйте хмарний біометричний <strong>Дія.Підпис</strong> (де ключ не зберігається на флешці), а для накладання кількох підписів послідовно застосовуйте офіційний портал Центрального засвідчувального органу <strong>czo.gov.ua</strong> без пересилання особистих ключів.</li>
+        </ol>
+      </div>
+
+      <div class="card-block">
+        <label style="color:var(--olive);margin-bottom:8px;">Складіть експрес-пам’ятку з 3 обов’язкових правил «Безпечна викладацька / навчальна аудиторія» (включно з правилом роботи з КЕП)</label>
+        <div class="field-group"><label>Положення 1 — Режим відкриття браузера на спільному ПК</label><input type="text" id="m1"></div>
+        <div class="field-group"><label>Положення 2 — Контроль збереження паролів та локальних файлів</label><input type="text" id="m2"></div>
+        <div class="field-group"><label>Положення 3 — Завершення сесії та особисте використання КЕП (Дія.Підпис / czo.gov.ua)</label><input type="text" id="m3"></div>
+      </div>
+
+      <div class="footer-nav">
+        <button type="button" class="btn btn-soft" onclick="goStep(5)">← Назад до Кроку 5</button>
+        <button type="button" class="btn btn-terra" onclick="goStep(7)">Далі — Крок 7 (5 правил безпеки) →</button>
+      </div>
+    </div>
+
+    <!-- КРОК 7 -->
+    <div class="step-pane" id="step7">
+      <div class="top-row">
+        <h2>Крок 7. Підсумковий регламент — 5 правил безпечного обміну файлами та документами</h2>
+        <button type="button" class="btn btn-amber" onclick="sample7()">Заповнити Крок 7 зразком</button>
+      </div>
+
+      <div class="theory-box">
+        <strong>Методична вимога</strong> — узагальніть опрацьовані на попередніх кроках механізми у 5 чітких дієслівних правил корпоративної кібергігієни для вашої кафедри або закладу освіти.
+      </div>
+
+      <div class="card-block">
+        <div class="field-group"><label>Правило 1 — Захист персональних даних здобувачів освіти у хмарному середовищі</label><textarea id="r1"></textarea></div>
+        <div class="field-group"><label>Правило 2 — Розмежування рівнів доступу (Перегляд — Коментування — Редагування) та захист діапазонів</label><textarea id="r2"></textarea></div>
+        <div class="field-group"><label>Правило 3 — Безпека облікового запису (2FA, ревізія сесій, режим Інкогніто на спільних ПК)</label><textarea id="r3"></textarea></div>
+        <div class="field-group"><label>Правило 4 — Верифікація електронної кореспонденції та перевірка вкладень (вбудовані антивірусні інструменти операційної системи)</label><textarea id="r4"></textarea></div>
+        <div class="field-group"><label>Правило 5 — Особиста юридична відповідальність і безпечне використання КЕП</label><textarea id="r5"></textarea></div>
+      </div>
+
+      <div class="footer-nav">
+        <button type="button" class="btn btn-soft" onclick="goStep(6)">← Назад до Кроку 6</button>
+        <button type="button" class="btn btn-terra" onclick="goStep(8)">Сформувати Звітний аркуш (PDF-паспорт) →</button>
+      </div>
+    </div>
+
+    <!-- КРОК 8 (ФІНАЛЬНИЙ ЗВІТ) -->
+    <div class="step-pane" id="step8">
+      <div class="report-sheet">
+        <div class="report-header">
+          <h2 style="color:#fff;font-size:17.5px;margin-bottom:3px;">ЗВІТНИЙ РОБОЧИЙ АРКУШ — ПРАКТИЧНА РОБОТА ДО ТЕМИ 10</h2>
+          <p style="font-size:12.5px;opacity:.92;">Модуль 4. Кібергігієна в комунікації, документообігу та спільній роботі</p>
+        </div>
+        <div id="repOut"></div>
+      </div>
+
+      <div class="theory-box no-print" style="border-left-color:var(--amber);">
+        <strong>Подання виконаної роботи у Google Classroom</strong> — натисніть кнопку <strong>«Зберегти PDF-паспорт (Друк)»</strong> (оберіть «Зберегти як PDF») або зробіть <strong>скріншот цього звітного аркуша</strong> та прикріпіть до завдання в Google Класі.
+      </div>
+
+      <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="btn" onclick="window.print()">Зберегти PDF-паспорт (Друк)</button>
+        <button type="button" class="btn btn-terra" onclick="sendMail()">Надіслати на пошту (ls.shevchenko@vspu.edu.ua)</button>
+        <button type="button" class="btn btn-soft" onclick="copyRep()">Скопіювати текст звіту</button>
+        <button type="button" class="btn btn-soft" onclick="goStep(7)">← Повернутися до редагування</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
